@@ -1,0 +1,162 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #ffffff;
+    --secondary-color: #4f687a;
+    --text-color: #4f687a;
+    --border-radius: 15px;
+    --spacing: 20px;
+}
+
+body {
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: #586b7d;
+    background-image: 
+        linear-gradient(45deg, #7b91a7 25%, transparent 25%),
+        linear-gradient(-45deg, #7b91a7 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #7b91a7 75%),
+        linear-gradient(-45deg, transparent 75%, #7b91a7 75%);
+    background-size: 1000px 1000px;
+    background-position: 0 0, 0 500px, 500px -500px, -500px 0px;
+    min-height: 100vh;
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    margin: 0;
+}
+
+/* CV Container */
+.cv-container {
+    width: 100%;
+    max-width: 793.7px; /* A4 width in pixels at 96 DPI */
+    background-color: var(--primary-color);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.15);
+    margin: 0 auto;
+    min-height: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Top Section (33%) */
+.cv-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 40px;
+    background: var(--primary-color);
+    color: var(--primary-color);
+    min-height: 33vh;
+}
+
+.header-text h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    color: var(--text-color);
+}
+
+.header-text h2 {
+    font-size: 1.5rem;
+    font-weight: 400;
+    opacity: 0.9;
+    color: var(--text-color);
+}
+
+.profile-image {
+    width: 300px;
+    height: 300px;
+    border-radius: 0 80px 0 0;
+    overflow: hidden;
+}
+
+.profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Bottom Section (66%) */
+.cv-bottom {
+    display: flex;
+    min-height: 66vh;
+}
+
+/* Columns */
+.left-column, .right-column {
+    flex: 1;
+    padding: 40px;
+}
+
+.left-column {
+    padding-right: 20px;
+}
+
+.right-column {
+    padding-left: 20px;
+}
+
+.left-column {
+    background-color: var(--primary-color);
+}
+
+.right-column {
+    background-color: var(--primary-color);
+}
+
+/* Sections */
+.section {
+    margin-bottom: 30px;
+}
+
+.section h3 {
+    color:  var(--text-color);
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .cv-top {
+        flex-direction: column;
+        text-align: center;
+        padding: 30px 20px;
+    }
+
+    .profile-image {
+        margin-top: 20px;
+        width: 150px;
+        height: 150px;
+    }
+
+    .cv-bottom {
+        flex-direction: column;
+    }
+
+    .left-column, .right-column {
+        width: 100%;
+    }
+}
+
+/* Print styles */
+@media print {
+    body {
+        padding: 0;
+        background: none;
+    }
+
+    .cv-container {
+        box-shadow: none;
+        border: none;
+    }
+    
+    .left-column, .right-column {
+        padding: 30px;
+    }
+}

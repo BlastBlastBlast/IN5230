@@ -1,0 +1,74 @@
+/* Base Styles */
+body {
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 1.5rem;
+}
+
+/* Input */
+#currency-input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px 0 0 4px;
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+/* Buttons */
+button {
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+#add-button {
+    border: none;
+    border-radius: 4px;
+}
+
+#add-button:hover {
+    background-color: #45a049;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    color: #dc3545;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.delete-btn i {
+    font-size: 1rem;
+    transition: color 0.2s ease;
+}
+
+.delete-btn:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+.delete-btn:hover i {
+    color: white;
+}
