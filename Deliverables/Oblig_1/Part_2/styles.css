@@ -17,7 +17,7 @@ body {
 }
 
 h1 {
-    text-align: center;
+    text-align: left;
     color: #333;
     margin-bottom: 1.5rem;
 }
@@ -46,7 +46,7 @@ button {
 }
 
 #add-button:hover {
-    background-color: #45a049;
+    background-color: #c1dec3;
 }
 
 .delete-btn {
