@@ -108,27 +108,39 @@ function initializeCurrencies() {
 }
 
 // Initialize when the DOM is fully loaded
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeCurrencies);
-} else {
+function initializeApp() {
     initializeCurrencies();
+    
+    // Initialize tab functionality
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove active class from all buttons and contents
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Add active class to clicked button and corresponding content
+            button.classList.add('active');
+            const tabId = button.getAttribute('data-tab');
+            const tabContent = document.getElementById(tabId);
+            if (tabContent) {
+                tabContent.classList.add('active');
+            }
+        });
+    });
+    
+    // Start the population counter if we have population data
+    if (Object.keys(populationData).length > 0) {
+        startPopulationCounter();
+    }
 }
 
-// ====================
-// TAB FUNCTIONALITY
-// ====================
-tabButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        // Remove active class from all buttons and contents
-        tabButtons.forEach(btn => btn.classList.remove('active'));
-        tabContents.forEach(content => content.classList.remove('active'));
-        
-        // Add active class to clicked button and corresponding content
-        button.classList.add('active');
-        const tabId = button.getAttribute('data-tab');
-        document.getElementById(tabId).classList.add('active');
-    });
-});
+// Check if the DOM is already loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    // DOM is already loaded
+    initializeApp();
+}
 
 // ====================
 // CURRENCY APP (Assignments 1-4)
@@ -227,7 +239,17 @@ async function fetchPopulationData(country) {
         
         const population = todayData.population;
         const dailyChange = tomorrowData.population - population;
-        const perSecondChange = dailyChange / 86400; // seconds in a day
+        
+        // Calculate change per second (for smoother updates, we'll use a higher rate for visibility)
+        // We'll multiply by 100 to make the changes more visible in the UI
+        const perSecondChange = (dailyChange / 86400) * 100;
+        
+        console.log(`Population data for ${country}:`, {
+            today: population,
+            tomorrow: tomorrowData.population,
+            dailyChange,
+            perSecondChange
+        });
         
         return {
             population,
@@ -296,21 +318,26 @@ async function addCountry(countryName) {
             throw new Error('No population data available for this country.');
         }
         
-        // Add to population data
+        // Add to population data with initial values
         populationData[country] = {
-            ...data,
-            element: null,
+            population: data.population,
+            rate: data.perSecondChange,
             lastUpdate: Date.now(),
-            lastPopulation: data.population
+            lastPopulation: data.population,
+            element: null
         };
+        
+        console.log(`Added ${country} to population data:`, populationData[country]);
         
         // Update the display
         updatePopulationDisplay(country);
         
-        // Start population counter if not already running
-        if (Object.keys(populationData).length === 1) {
-            startPopulationCounter();
+        // Start or restart the population counter
+        if (populationInterval) {
+            clearInterval(populationInterval);
+            populationInterval = null;
         }
+        startPopulationCounter();
         
         // Clear the input
         if (countryInput) {
@@ -444,66 +471,105 @@ function updatePopulationDisplay(country) {
 // Update population counts with real-time data
 function updatePopulationCounts() {
     const now = Date.now();
+    let needsUpdate = false;
     
     Object.entries(populationData).forEach(([country, data]) => {
-        if (!data.rate) return;
+        if (!data || data.rate === undefined) {
+            console.log(`Skipping ${country}: No rate data`);
+            return;
+        }
         
-        // Only update if we have valid rate data
-        if (data.rate !== undefined) {
-            // Calculate time passed since last update (in seconds)
-            const secondsPassed = (now - (data.lastUpdate || now)) / 1000;
+        // Make sure we have an element
+        if (!data.element) {
+            console.log(`Creating element for ${country}`);
+            updatePopulationDisplay(country);
+            if (!data.element) {
+                console.error(`Failed to create element for ${country}`);
+                return;
+            }
+        }
+        
+        // Calculate time passed since last update (in seconds)
+        const secondsPassed = (now - (data.lastUpdate || now)) / 1000;
+        
+        // Calculate population change based on the rate
+        const change = Math.round(data.rate * secondsPassed);
+        
+        if (change !== 0) {
+            needsUpdate = true;
             
-            // Calculate population change based on the rate
-            const change = Math.round(data.rate * secondsPassed);
+            // Update population and timestamp
+            const newPopulation = Math.max(0, data.population + change);
             
-            if (change !== 0) {
-                // Update population and timestamp
+            // Only update if the population actually changed
+            if (newPopulation !== data.population) {
                 data.lastPopulation = data.population;
-                data.population = Math.max(0, data.population + change);
+                data.population = newPopulation;
                 data.lastUpdate = now;
                 
                 // Update the display
                 updatePopulationDisplay(country);
             }
-        } else {
-            // If no rate data, just update the display with current values
-            updatePopulationDisplay(country);
         }
     });
+    
+    return needsUpdate;
 }
 
 // Start the population counter
-let populationInterval;
+let populationInterval = null;
 let lastUpdateTime = 0;
-const UPDATE_INTERVAL = 1000; // 1 second
 
 function startPopulationCounter() {
-    if (populationInterval) return;
+    // Clear any existing animation frame to prevent multiple counters
+    if (populationInterval !== null) {
+        cancelAnimationFrame(populationInterval);
+        populationInterval = null;
+    }
     
     lastUpdateTime = Date.now();
+    console.log('Starting population counter...', {
+        numCountries: Object.keys(populationData).length,
+        countries: Object.keys(populationData),
+        populationData: populationData
+    });
     
-    populationInterval = setInterval(() => {
+    // Use requestAnimationFrame for smoother animations
+    function updateCounter() {
         try {
             const now = Date.now();
-            const deltaTime = now - lastUpdateTime;
             lastUpdateTime = now;
             
             // Only update if we have countries to track
             if (Object.keys(populationData).length === 0) {
-                clearInterval(populationInterval);
-                populationInterval = null;
                 return;
             }
             
-            // Throttle updates to prevent excessive re-renders
-            if (deltaTime >= 100) { // Only update if at least 100ms have passed
-                updatePopulationCounts();
+            // Update population counts
+            const needsUpdate = updatePopulationCounts();
+            
+            // Continue the animation loop
+            if (needsUpdate) {
+                populationInterval = requestAnimationFrame(updateCounter);
+            } else {
+                // If no updates needed, check again in 1 second
+                setTimeout(() => {
+                    populationInterval = requestAnimationFrame(updateCounter);
+                }, 1000);
             }
         } catch (error) {
             console.error('Error in population counter:', error);
-            // Don't crash the counter on error, just log it
+            // If there's an error, try to restart the counter after a delay
+            setTimeout(() => {
+                if (Object.keys(populationData).length > 0) {
+                    startPopulationCounter();
+                }
+            }, 1000);
         }
-    }, 100); // Check every 100ms for smoother updates
+    }
+    
+    // Start the animation loop
+    populationInterval = requestAnimationFrame(updateCounter);
 }
 
 // Delete a country from the population list
