@@ -39,17 +39,14 @@ function addDeleteButton(li) {
     li.appendChild(deleteButton);
 }
 
-// Part A: Function that checks if element starts with searchWord (case-insensitive)
 function startsWithCaseInsensitive(element, searchWord) {
     return element.toLowerCase().startsWith(searchWord.toLowerCase());
 }
 
-// Part B: Function that filters a list based on searchWord
 function filterList(list, searchWord) {
     if (!searchWord) return list;
     
     return list.filter(item => {
-        // Get the text content of the span element (first child of li)
         const textContent = item.querySelector('span').textContent;
         return startsWithCaseInsensitive(textContent, searchWord);
     });
