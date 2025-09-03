@@ -1,5 +1,6 @@
 // Elements
 const currencyInput = document.getElementById('currency-input');
+const searchInput = document.getElementById('search-input');
 const addButton = document.getElementById('add-button');
 const currencyList = document.getElementById('currency-list');
 
@@ -26,6 +27,8 @@ function addCurrency(currencyName) {
     addDeleteButton(li);
     currencyList.appendChild(li);
     currencyInput.value = '';
+    
+    updateCurrencyDisplay();
 }
 
 function addDeleteButton(li) {
@@ -34,6 +37,28 @@ function addDeleteButton(li) {
     deleteButton.classList.add('delete-btn');
     deleteButton.addEventListener('click', () => currencyList.removeChild(li));
     li.appendChild(deleteButton);
+}
+
+function sttarsWithCaseInsensitive(element, searchWord) {
+    return element.toLowerCase().startsWith(searchWord.toLowerCase());
+}
+
+function filterList(list, searchWord) {
+    if (!searchWord) return list;
+    
+    return list.filter(li => 
+        sttarsWithCaseInsensitive(li.textContent, searchWord)
+    );
+}
+
+function updateDisplay() {
+    const searchTerm = searchInput.value.trim();
+    const allItems = Array.from(currencyList.getElementsByTagName('li'));
+    
+    allItems.forEach(item => {
+        const result = !searchTerm || item.textContent.toLowerCase().includes(searchTerm.toLowerCase());
+        item.style.display = result ? 'flex' : 'none';
+    });
 }
 
 // Event Listeners
@@ -56,3 +81,5 @@ currencyInput.addEventListener('keypress', (e) => {
         addCurrency(currencyInput.value.trim());
     }
 });
+
+searchInput.addEventListener('input', updateDisplay);
