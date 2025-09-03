@@ -28,7 +28,7 @@ function addCurrency(currencyName) {
     currencyList.appendChild(li);
     currencyInput.value = '';
     
-    updateCurrencyDisplay();
+    updateDisplay();
 }
 
 function addDeleteButton(li) {
@@ -39,27 +39,44 @@ function addDeleteButton(li) {
     li.appendChild(deleteButton);
 }
 
-function sttarsWithCaseInsensitive(element, searchWord) {
+// Part A: Function that checks if element starts with searchWord (case-insensitive)
+function startsWithCaseInsensitive(element, searchWord) {
     return element.toLowerCase().startsWith(searchWord.toLowerCase());
 }
 
+// Part B: Function that filters a list based on searchWord
 function filterList(list, searchWord) {
     if (!searchWord) return list;
     
-    return list.filter(li => 
-        sttarsWithCaseInsensitive(li.textContent, searchWord)
-    );
+    return list.filter(item => {
+        // Get the text content of the span element (first child of li)
+        const textContent = item.querySelector('span').textContent;
+        return startsWithCaseInsensitive(textContent, searchWord);
+    });
 }
 
 function updateDisplay() {
     const searchTerm = searchInput.value.trim();
     const allItems = Array.from(currencyList.getElementsByTagName('li'));
     
-    allItems.forEach(item => {
-        const result = !searchTerm || item.textContent.toLowerCase().includes(searchTerm.toLowerCase());
-        item.style.display = result ? 'flex' : 'none';
-    });
+    if (searchTerm) {
+        const filteredItems = filterList(allItems, searchTerm);
+        allItems.forEach(item => {
+            item.style.display = filteredItems.includes(item) ? 'flex' : 'none';
+        });
+    } else {
+        allItems.forEach(item => {
+            item.style.display = 'flex';
+        });
+    }
 }
+
+// Add initial currencies
+window.addEventListener('DOMContentLoaded', () => {
+    ['Euro', 'Norwegian Kroner', 'Canadian Dollar'].forEach(currency => {
+        addCurrency(currency);
+    });
+});
 
 // Event Listeners
 addButton.addEventListener('click', () => {
