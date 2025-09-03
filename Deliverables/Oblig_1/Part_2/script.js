@@ -66,15 +66,15 @@ addButton.addEventListener('click', () => {
     addCurrency(currencyInput.value.trim());
 });
 
-document.addEventListener('keydown', (e) => {
-    // Check if backspace is pressed and the input is empty
-    if (e.key === 'Backspace' && currencyInput.value === '') {
-        const lastItem = currencyList.lastElementChild;
-        if (lastItem) {
-            currencyList.removeChild(lastItem);
-        }
-    }
-});
+// document.addEventListener('keydown', (e) => {
+//     // Check if backspace is pressed and the input is empty
+//     if (e.key === 'Backspace' && currencyInput.value === '') {
+//         const lastItem = currencyList.lastElementChild;
+//         if (lastItem) {
+//             currencyList.removeChild(lastItem);
+//         }
+//     }
+// });
 
 currencyInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
