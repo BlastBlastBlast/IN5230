@@ -366,10 +366,18 @@ async function addCountry(countryName) {
     }
 }
 
+// Track total population changes
+let totalPopulationChange = 0;
+
 // Update the population display for a country
 function updatePopulationDisplay(country) {
     const data = populationData[country];
     if (!data) return;
+    
+    // Initialize total change tracking if it doesn't exist
+    if (data.totalChange === undefined) {
+        data.totalChange = 0;
+    }
     
     const now = Date.now();
     const timeSinceLastChange = now - (data.lastUpdate || now);
@@ -392,9 +400,24 @@ function updatePopulationDisplay(country) {
         changeSpan.className = 'population-change';
         changeSpan.textContent = '';
         
+        // Add total change display
+        const totalChangeSpan = document.createElement('span');
+        totalChangeSpan.className = 'total-change';
+        totalChangeSpan.textContent = '';
+        
+        const infoContainer = document.createElement('div');
+        infoContainer.className = 'population-info';
+        
+        const changeContainer = document.createElement('div');
+        changeContainer.className = 'change-container';
+        changeContainer.appendChild(changeSpan);
+        changeContainer.appendChild(totalChangeSpan);
+        
+        infoContainer.appendChild(popSpan);
+        infoContainer.appendChild(changeContainer);
+        
         item.appendChild(nameSpan);
-        item.appendChild(popSpan);
-        item.appendChild(changeSpan);
+        item.appendChild(infoContainer);
         
         // Add delete button
         const deleteBtn = document.createElement('button');
@@ -424,13 +447,29 @@ function updatePopulationDisplay(country) {
         
         // Only show change if it's significant and we have a previous value
         if (Math.abs(change) > 0 && timeSinceLastChange < 5000) {
-            changeSpan.textContent = change > 0 ? `+${Math.round(change).toLocaleString()}` : Math.round(change).toLocaleString();
-            changeSpan.className = `population-change ${change > 0 ? 'population-increase' : 'population-decrease'}`;
+            const roundedChange = Math.round(change);
+            changeSpan.textContent = roundedChange > 0 ? `+${roundedChange.toLocaleString()}` : roundedChange.toLocaleString();
+            changeSpan.className = `population-change ${roundedChange > 0 ? 'population-increase' : 'population-decrease'}`;
             
-            // Fade out the change indicator after 3 seconds
+            // Update total change
+            data.totalChange += roundedChange;
+            totalPopulationChange += roundedChange;
+            
+            // Update total change display
+            const totalChangeSpan = data.element.item.querySelector('.total-change');
+            if (totalChangeSpan) {
+                totalChangeSpan.textContent = ` (${data.totalChange > 0 ? '+' : ''}${data.totalChange.toLocaleString()})`;
+                totalChangeSpan.className = `total-change ${data.totalChange > 0 ? 'population-increase' : data.totalChange < 0 ? 'population-decrease' : ''}`;
+            }
+            
+            // Fade out the change indicator after 3 seconds, but keep total
             setTimeout(() => {
-                if (data.element?.changeSpan) {
-                    data.element.changeSpan.textContent = '';
+                if (data.element?.item) {
+                    const changeSpan = data.element.item.querySelector('.population-change');
+                    if (changeSpan) {
+                        changeSpan.textContent = '';
+                        changeSpan.className = 'population-change';
+                    }
                 }
             }, 3000);
         }
