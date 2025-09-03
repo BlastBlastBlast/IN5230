@@ -148,109 +148,194 @@ searchInput.addEventListener('input', updateDisplay);
 // ====================
 // POPULATION APP (Assignments 5-6)
 // ====================
-// Mock country data since the population.io API is not working
-const mockCountries = [
-    'Norway', 'Sweden', 'Denmark', 'Finland', 'Iceland',
-    'Germany', 'France', 'Spain', 'Italy', 'United Kingdom',
-    'United States', 'Canada', 'Mexico', 'Brazil', 'Argentina',
-    'China', 'Japan', 'South Korea', 'India', 'Australia'
-];
-
-// Mock population data
-const mockPopulations = {
-    'Norway': 5421241,
-    'Sweden': 10353442,
-    'Denmark': 5831404,
-    'Finland': 5540720,
-    'Iceland': 366425,
-    'Germany': 83783942,
-    'France': 65273511,
-    'Spain': 46754778,
-    'Italy': 60461826,
-    'United Kingdom': 67886011,
-    'United States': 331002651,
-    'Canada': 37742154,
-    'Mexico': 128932753,
-    'Brazil': 212559417,
-    'Argentina': 45195774,
-    'China': 1439323776,
-    'Japan': 126476461,
-    'South Korea': 51269185,
-    'India': 1380004385,
-    'Australia': 25499884
-};
-
+const POPULATION_API_BASE = 'https://d6wn6bmjj722w.population.io/1.0';
 let populationData = {}; // Cache for population data
+let supportedCountries = [];
 
-// Mock fetch countries
-function fetchCountries() {
-    return mockCountries;
+// Fetch list of supported countries from the API
+async function fetchCountries() {
+    // If we already have countries, return them
+    if (supportedCountries.length > 0) {
+        return supportedCountries;
+    }
+    
+    const response = await fetch(`${POPULATION_API_BASE}/countries/`, {
+        headers: {
+            'Accept': 'application/json'
+        }
+    });
+    
+    if (!response.ok) {
+        throw new Error(`Failed to fetch countries: ${response.status} ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    if (!data || !Array.isArray(data.countries)) {
+        throw new Error('Invalid response format from countries API');
+    }
+    
+    // Cache the countries
+    supportedCountries = data.countries;
+    return supportedCountries;
 }
 
-// Mock fetch population data
+// Fetch population data for a country
 async function fetchPopulationData(country) {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return mockPopulations[country] || null;
+    try {
+        // First, check if we have the list of supported countries
+        if (supportedCountries.length === 0) {
+            await fetchCountries();
+        }
+        
+        // Check if the country is in the supported list
+        const countryObj = supportedCountries.find(c => c.toLowerCase() === country.toLowerCase());
+        if (!countryObj) {
+            throw new Error(`"${country}" is not a recognized country.`);
+        }
+        
+        // Use the correct country name from the API
+        const apiCountryName = countryObj;
+        const apiUrl = `${POPULATION_API_BASE}/population/${encodeURIComponent(apiCountryName)}/today-and-tomorrow/`;
+        
+        console.log(`Fetching population data from: ${apiUrl}`);
+        
+        const response = await fetch(apiUrl, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`API Error (${response.status}):`, errorText);
+            throw new Error('Failed to fetch population data. Please try again later.');
+        }
+        
+        const data = await response.json();
+        console.log('Population API Response:', data);
+        
+        if (!data || !data.total_population || data.total_population.length < 2) {
+            throw new Error('No population data available for this country.');
+        }
+        
+        const [todayData, tomorrowData] = data.total_population;
+        
+        if (!todayData || !todayData.population || !tomorrowData || !tomorrowData.population) {
+            throw new Error('Invalid population data received.');
+        }
+        
+        const population = todayData.population;
+        const dailyChange = tomorrowData.population - population;
+        const perSecondChange = dailyChange / 86400; // seconds in a day
+        
+        return {
+            population,
+            perSecondChange,
+            lastUpdate: Date.now(),
+            rate: perSecondChange
+        };
+        
+    } catch (error) {
+        console.error(`Error in fetchPopulationData for ${country}:`, error);
+        throw error; // Re-throw to be handled by the caller
+    }
 }
 
 // Add a country to the population list
 async function addCountry(countryName) {
     const name = countryName.trim();
-    if (!name) return;
-
-    // Check if country is valid (case-insensitive match)
-    const normalizedInput = name.toLowerCase();
-    const country = mockCountries.find(c => c.toLowerCase() === normalizedInput);
+    if (!name) {
+        alert('Please enter a country name');
+        return;
+    }
     
-    if (!country) {
-        alert('Country not found. Please enter a valid country name.\n\nTry: ' + 
-              mockCountries.slice(0, 5).join(', ') + '...');
-        return;
-    }
-
-    // Check if already in the list
-    if (populationData[country]) {
-        alert('This country is already in the list!');
-        return;
-    }
-
     // Show loading state
     const loadingMsg = document.createElement('div');
     loadingMsg.className = 'loading-msg';
-    loadingMsg.textContent = `Fetching population data for ${country}...`;
+    loadingMsg.textContent = `Fetching population data for ${name}...`;
     populationList.appendChild(loadingMsg);
-
+    
     try {
-        // Fetch population data
-        const population = await fetchPopulationData(country);
+        // Ensure we have the latest list of supported countries
+        const countries = await fetchCountries();
         
-        // Remove loading message
-        populationList.removeChild(loadingMsg);
+        // Find the correct country name with proper case
+        const country = countries.find(
+            c => c.toLowerCase() === name.toLowerCase()
+        );
         
-        if (population === null) {
-            alert('Could not fetch population data for this country.');
-            return;
+        if (!country) {
+            // If no exact match, try to find similar countries
+            const similarCountries = countries.filter(c => 
+                c.toLowerCase().includes(name.toLowerCase())
+            ).slice(0, 5);
+            
+            let errorMsg = `"${name}" is not a recognized country.`;
+            if (similarCountries.length > 0) {
+                errorMsg += '\n\nDid you mean one of these?\n' + similarCountries.join('\n');
+            } else {
+                errorMsg += '\n\nPlease check your spelling or try another country.';
+            }
+            
+            throw new Error(errorMsg);
         }
-
-        // Add to data cache
+        
+        // Check if already in the list
+        if (populationData[country]) {
+            throw new Error(`${country} is already in the list!`);
+        }
+        
+        // Show loading message
+        loadingMsg.textContent = `Fetching population data for ${country}...`;
+        
+        // Fetch population data
+        const data = await fetchPopulationData(country);
+        
+        if (!data) {
+            throw new Error('No population data available for this country.');
+        }
+        
+        // Add to population data
         populationData[country] = {
-            population: population,
+            ...data,
             element: null,
-            lastUpdate: Date.now()
+            lastUpdate: Date.now(),
+            lastPopulation: data.population
         };
-
-        // Create and add list item
+        
+        // Update the display
         updatePopulationDisplay(country);
         
         // Start population counter if not already running
         if (Object.keys(populationData).length === 1) {
             startPopulationCounter();
         }
+        
+        // Clear the input
+        if (countryInput) {
+            countryInput.value = '';
+        }
+        
     } catch (error) {
-        populationList.removeChild(loadingMsg);
-        alert('An error occurred while fetching population data.');
         console.error('Error in addCountry:', error);
+        
+        // Show user-friendly error message
+        let errorMessage = 'An error occurred while adding the country.';
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            errorMessage = 'Unable to connect to the server. Please check your internet connection.';
+        } else if (error.message.includes('404')) {
+            errorMessage = 'Country not found. Please check the spelling and try again.';
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+        
+        alert(errorMessage);
+    } finally {
+        // Always remove loading message
+        if (loadingMsg && loadingMsg.parentNode === populationList) {
+            populationList.removeChild(loadingMsg);
+        }
     }
 }
 
@@ -260,7 +345,7 @@ function updatePopulationDisplay(country) {
     if (!data) return;
     
     const now = Date.now();
-    const timeSinceLastChange = now - (data.lastChangeTime || now);
+    const timeSinceLastChange = now - (data.lastUpdate || now);
     
     // Create new element if it doesn't exist
     if (!data.element) {
@@ -273,7 +358,7 @@ function updatePopulationDisplay(country) {
         
         const popSpan = document.createElement('span');
         popSpan.className = 'population-count';
-        popSpan.textContent = data.population.toLocaleString();
+        popSpan.textContent = Math.round(data.population).toLocaleString();
         
         // Add change indicator
         const changeSpan = document.createElement('span');
@@ -307,12 +392,12 @@ function updatePopulationDisplay(country) {
     } else {
         // Update existing element with animation
         const { popSpan, changeSpan } = data.element;
-        const oldValue = parseInt(popSpan.textContent.replace(/,/g, '')) || data.population;
+        const oldValue = data.lastPopulation || data.population;
         const change = data.population - oldValue;
         
         // Only show change if it's significant and we have a previous value
         if (Math.abs(change) > 0 && timeSinceLastChange < 5000) {
-            changeSpan.textContent = change > 0 ? `+${change.toLocaleString()}` : change.toLocaleString();
+            changeSpan.textContent = change > 0 ? `+${Math.round(change).toLocaleString()}` : Math.round(change).toLocaleString();
             changeSpan.className = `population-change ${change > 0 ? 'population-increase' : 'population-decrease'}`;
             
             // Fade out the change indicator after 3 seconds
@@ -356,46 +441,69 @@ function updatePopulationDisplay(country) {
     data.lastChangeTime = now;
 }
 
-// Update population counts with realistic changes
+// Update population counts with real-time data
 function updatePopulationCounts() {
     const now = Date.now();
     
     Object.entries(populationData).forEach(([country, data]) => {
-        // Calculate time passed since last update (in hours)
-        const hoursPassed = (now - (data.lastUpdate || now)) / (1000 * 60 * 60);
+        if (!data.rate) return;
         
-        // Calculate population change based on birth rate (per 1000 people per year)
-        // Using approximate global average birth rate of 18 per 1000 per year
-        const birthRate = 18 / (365 * 24); // Births per hour per 1000 people
-        const deathsRate = 8 / (365 * 24);  // Deaths per hour per 1000 people
-        
-        // Calculate net change
-        const netChange = (birthRate - deathsRate) * (data.population / 1000) * hoursPassed;
-        
-        // Add some randomness and round to nearest integer
-        const change = Math.round(netChange * (0.8 + Math.random() * 0.4));
-        
-        // Update population and timestamp
-        data.population = Math.max(0, data.population + change);
-        data.lastUpdate = now;
-        
-        updatePopulationDisplay(country);
+        // Only update if we have valid rate data
+        if (data.rate !== undefined) {
+            // Calculate time passed since last update (in seconds)
+            const secondsPassed = (now - (data.lastUpdate || now)) / 1000;
+            
+            // Calculate population change based on the rate
+            const change = Math.round(data.rate * secondsPassed);
+            
+            if (change !== 0) {
+                // Update population and timestamp
+                data.lastPopulation = data.population;
+                data.population = Math.max(0, data.population + change);
+                data.lastUpdate = now;
+                
+                // Update the display
+                updatePopulationDisplay(country);
+            }
+        } else {
+            // If no rate data, just update the display with current values
+            updatePopulationDisplay(country);
+        }
     });
 }
 
 // Start the population counter
 let populationInterval;
+let lastUpdateTime = 0;
+const UPDATE_INTERVAL = 1000; // 1 second
+
 function startPopulationCounter() {
     if (populationInterval) return;
     
+    lastUpdateTime = Date.now();
+    
     populationInterval = setInterval(() => {
-        if (Object.keys(populationData).length === 0) {
-            clearInterval(populationInterval);
-            populationInterval = null;
-            return;
+        try {
+            const now = Date.now();
+            const deltaTime = now - lastUpdateTime;
+            lastUpdateTime = now;
+            
+            // Only update if we have countries to track
+            if (Object.keys(populationData).length === 0) {
+                clearInterval(populationInterval);
+                populationInterval = null;
+                return;
+            }
+            
+            // Throttle updates to prevent excessive re-renders
+            if (deltaTime >= 100) { // Only update if at least 100ms have passed
+                updatePopulationCounts();
+            }
+        } catch (error) {
+            console.error('Error in population counter:', error);
+            // Don't crash the counter on error, just log it
         }
-        updatePopulationCounts();
-    }, 1000);
+    }, 100); // Check every 100ms for smoother updates
 }
 
 // Delete a country from the population list
