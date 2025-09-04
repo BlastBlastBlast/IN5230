@@ -1,0 +1,26 @@
+/* Add button styles */
+#addButton {
+    color: black;
+    background-color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+}
+
+#addButton:hover {
+    background-color: lightgreen;
+}
+
+/* Delete button styles */
+.deleteButton {
+    color: red;
+    background-color: white;
+    border: none;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.deleteButton:hover {
+    background-color: red;
+    color: white;
+}
