@@ -1,11 +1,12 @@
-// Store added currencies in an array
+// --------------------------
+// GLOBAL VARIABLES
+// --------------------------
+// Currency Array
 let addedCurrencies = [];
 
 // --------------------------
 // FUNCTIONS
 // --------------------------
-
-// Function to add a currency to the list
 function addCurrency(currency) {
     const currencyList = document.getElementById('currencyList');
     const listItem = createListItem(currency);
@@ -13,7 +14,6 @@ function addCurrency(currency) {
     addedCurrencies.push(currency);
 }
 
-// Function to create a delete button for a list item
 function createDeleteButton(currency, listItem) {
     const button = document.createElement('button');
     button.innerHTML = '<i class="fas fa-times"></i>';
@@ -25,7 +25,6 @@ function createDeleteButton(currency, listItem) {
     return button;
 }
 
-// Function to create a list item with a delete button
 function createListItem(currency) {
     const listItem = document.createElement('li');
     listItem.textContent = currency;
@@ -35,20 +34,17 @@ function createListItem(currency) {
     return listItem;
 }
 
-// Function to check if an element starts with a search word
 function startsWithElement(element, searchWord) {
     return element.toLowerCase().startsWith(searchWord.toLowerCase());
 }
 
-// Function to filter the list by search word
 function filterListBySearchWord(list, searchWord) {
     return list.filter(element => startsWithElement(element, searchWord));
 }
 
-// Function to update the displayed currency list
 function updateCurrencyList(searchWord) {
     const currencyList = document.getElementById('currencyList');
-    currencyList.innerHTML = ''; // Clear the current list
+    currencyList.innerHTML = '';
 
     // Determine which list to display
     // If searchWord       -> Filter currencies by input
@@ -65,7 +61,7 @@ function updateCurrencyList(searchWord) {
 // EVENT LISTENERS
 // --------------------------
 
-// Add button appends to list
+// Add button appends to currency list
 document.getElementById('addButton').addEventListener('click', function() {
     const input = document.getElementById('currencyInput');
     const currency = input.value.trim();
@@ -75,7 +71,7 @@ document.getElementById('addButton').addEventListener('click', function() {
     }
 });
 
-// Enter key appends to list
+// Enter key appends to currency list
 document.getElementById('currencyInput').addEventListener('keydown', function(kbEvent) {
     if (kbEvent.key === 'Enter') {
         const currency = kbEvent.target.value.trim();
@@ -86,7 +82,7 @@ document.getElementById('currencyInput').addEventListener('keydown', function(kb
     }
 });
 
-// Search input updates the list
+// Search input updates the currency list
 document.getElementById('searchInput').addEventListener('input', function(pageEvent) {
     const searchWord = pageEvent.target.value.trim();
     updateCurrencyList(searchWord);
