@@ -8,16 +8,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <h1>Currency List</h1>
-    <div>
-        <input type="text" id="currencyInput" placeholder="Currency">
-        <button id="addButton">Add</button>
-    </div>
-    <div>
-        <input type="text" id="searchInput" placeholder="Search">
-    </div>
-    <div>
-        <ul id="currencyList"></ul>
+    <div class="app-container">
+        <h1>Currency List</h1>
+        <div class="input-row">
+            <input type="text" id="currencyInput" placeholder="Currency">
+            <button id="addButton">Add</button>
+        </div>
+        <div class="search-row">
+            <input type="text" id="searchInput" placeholder="Search">
+        </div>
+        <div class="list-container">
+            <ul id="currencyList"></ul>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>

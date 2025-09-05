@@ -1,10 +1,12 @@
 /* Add button styles */
 #addButton {
+    flex: 3;
     color: black;
     background-color: white;
-    border: none;
+    border: 1px solid #ddd;
     padding: 10px;
     cursor: pointer;
+    text-align: center;
 }
 
 #addButton:hover {
@@ -23,4 +25,43 @@
 .deleteButton:hover {
     background-color: red;
     color: white;
+}
+
+/* Container styles */
+.app-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.input-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+#currencyInput {
+    flex: 7;
+    min-width: 0; /* Prevents flex items from overflowing */
+}
+
+.search-row {
+    width: 100%;
+}
+
+.search-row input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.list-container {
+    flex: 1;
+    min-height: 200px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    overflow-y: auto;
 }
