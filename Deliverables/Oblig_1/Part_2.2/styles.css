@@ -1,12 +1,36 @@
-/* Add button styles */
+/* Base styles */
+body {
+    font-family: 'JetBrains Mono', monospace;
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+}
+
+/* Input and button base styles */
+#currencyInput,
+#searchInput,
 #addButton {
-    flex: 3;
-    color: black;
-    background-color: white;
+    height: 40px;  /* Fixed height for all elements */
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+#currencyInput,
+#searchInput {
+    padding: 0 12px;
     border: 1px solid #ddd;
-    padding: 10px;
+    border-radius: 4px;
+    width: 100%;
+}
+
+#addButton {
+    padding: 0 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
     cursor: pointer;
-    text-align: center;
+    transition: background-color 0.2s;
 }
 
 #addButton:hover {
