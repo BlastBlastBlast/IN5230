@@ -7,6 +7,7 @@ let addedCurrencies = [];
 // --------------------------
 // FUNCTIONS
 // --------------------------
+
 function addCurrency(currency) {
     const currencyList = document.getElementById('currencyList');
     const listItem = createListItem(currency);
@@ -20,7 +21,13 @@ function createDeleteButton(currency, listItem) {
     button.className = 'deleteButton';
     button.onclick = function() {
         listItem.remove();
-        addedCurrencies = addedCurrencies.filter(item => item !== currency);
+        addedCurrencies = addedCurrencies.filter(item => {
+            if (item !== currency) {
+                return true;
+            } else {
+                return false;
+            }
+        });
     };
     return button;
 }
@@ -46,10 +53,12 @@ function updateCurrencyList(searchWord) {
     const currencyList = document.getElementById('currencyList');
     currencyList.innerHTML = '';
 
-    // Determine which list to display
-    // If searchWord       -> Filter currencies by input
-    // else                -> Display all added currencies
-    const displayList = searchWord ? filterListBySearchWord(addedCurrencies, searchWord) : addedCurrencies;
+    let displayList;
+    if (searchWord) {
+        displayList = filterListBySearchWord(addedCurrencies, searchWord);
+    } else {
+        displayList = addedCurrencies;
+    }
 
     displayList.forEach(currency => {
         const listItem = createListItem(currency);
