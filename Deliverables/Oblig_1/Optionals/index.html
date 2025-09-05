@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignment Solutions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="currency-tab">Assignment 1-4: Currency List</button>
+            <button class="tab-btn" data-tab="population-tab">Assignment 5-6: Population App</button>
+        </div>
+        
+        <!-- Currency List (Assignments 1-4) -->
+        <div id="currency-tab" class="tab-content active">
+            <h1>Currency List</h1>
+            <div class="input-group">
+                <input type="text" id="currency-input" placeholder="Enter currency name">
+                <button id="add-button">Add</button>
+            </div>
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Search currencies...">
+            </div>
+            <ul id="currency-list"></ul>
+        </div>
+        
+        <!-- Population App (Assignments 5-6) -->
+        <div id="population-tab" class="tab-content">
+            <h1>Population Lookup</h1>
+            <div class="input-group">
+                <input type="text" id="country-input" placeholder="Enter country name">
+                <button id="add-country">Add Country</button>
+            </div>
+            <div id="population-list"></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
